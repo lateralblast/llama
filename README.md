@@ -94,7 +94,7 @@ Run checks and send alerts to Slack:
 ./llama.sh -c -s
 ```
 
-List alerts:
+List checks:
 
 ```
 ./llama.sh -l
