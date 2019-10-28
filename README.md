@@ -41,7 +41,8 @@ The following tools are required:
 - shell
 - curl
 - jq
-- slack webhook
+- Slack Webhook (for Slack alerts)
+- mailutils (for mail alerts)
 
 You can create Slack Webhooks here:
 
