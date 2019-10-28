@@ -16,7 +16,7 @@ The email list for the email alerts is kept in ~/.llama/email_list_file
 
 The checks are in JSON file (~/.llama/checks.json).
 
-An exxample JSON checks file:
+An example JSON checks file:
 
 ```
 [
