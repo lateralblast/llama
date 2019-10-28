@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Check coreaudiod is running",
+    "check": "ps -ef |grep -v grep |grep coreaudiod |awk '{print $8}'",
+    "value": "/usr/sbin/coreaudiod"
+  },
+  {
+    "title": "Check mDNSResponderHelper is running",
+    "check": "ps -ef |grep -v grep |grep mDNSResponderHelper |awk '{print $8}'",
+    "value": "/usr/sbin/mDNSResponderHelper"
+  }
+]
