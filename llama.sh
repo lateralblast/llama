@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Name:         llama (Lightweight Linux Automated Monitoring Agent
-# Version:      0.0.1
+# Version:      0.0.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -123,32 +123,63 @@ do_checks() {
   do_dryrun=$3
   do_false=$4
   do_verbose=$5
+  correct="no"
   length=$(jq length "$check_file")
   length=$(expr "$length" - 1)
   for counter in $(seq 0 "$length") ; do  
     title=$(jq -r ".[$counter].title" "$check_file")
     check=$(jq -r ".[$counter].check" "$check_file")
     value=$(jq -r ".[$counter].value" "$check_file")
+    funct=$(jq -r ".[$counter].funct" "$check_file")
+    funct=$(echo "$funct" |sed 's/ //g' |tr '[:upper:]' '[:lower:]')
+    if [ "$funct" = "null" ] ; then
+      funct="="
+    fi
+    case $funct in
+      "null")
+        funct="="
+        ;;
+      "<"|"lt"|"lessthan")
+        funct="-lt"
+        ;;
+      "<="|"le"|"lessthanequalto")
+        funct="-le"
+        ;;
+      ">"|"gt"|"greaterthan")
+        funct="-gt"
+        ;;
+      ">="|"ge"|"greaterthanorequalto")
+        funct="-ge"
+        ;;
+      "ne"|"notequal")
+        funct="!="
+        ;;
+      *|"equals")
+        funct="="
+        ;;
+    esac
     if [ "$do_list" = "yes" ] ; then
       echo "Title: $title"
       echo "Check: $check"
       echo "Value: $value"
+      echo "Funct: $funct"
     else
       if [ "$do_verbose" = "yes" ] ; then
         echo "Title: $title"
         echo "Check: $check"
         echo "Value: $value"
+        echo "Funct: $funct"
       fi
       output=$(eval $check)
-      if [ "$output" != "$value" ] || [ "$do_false" = "yes" ]; then
+      if [ "$output" $funct "$value" ] || [ "$do_false" = "yes" ] ; then
+        if [ "$do_dryrun" = "yes" ] ; then
+          echo "Correct: $title returns $value"
+        fi
+      else
         if [ "$do_dryrun" = "yes" ] ; then
           echo "Warning: $title does not return $value"
         else
           handle_alert "$title" "$value" "$do_false"
-        fi
-      else
-        if [ "$do_dryrun" = "yes" ] ; then
-          echo "Correct: $title returns $value"
         fi
       fi
     fi

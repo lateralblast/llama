@@ -33,6 +33,21 @@ An example JSON checks file:
 ]
 ```
 
+By default the function performed will be a equals check, however you can do a greater than or less than check.
+
+An example of a less than check:
+
+```
+[
+  {
+    "title": "Check number of Firefox instances running is less than 10",
+    "check": "ps -ef |grep Firefox |grep -v grep |wc -l |sed 's/ //g'",
+    "funct": "<",
+    "value": "10"
+  }
+]
+```
+
 Requirements
 ------------
 

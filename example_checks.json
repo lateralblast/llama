@@ -8,5 +8,11 @@
     "title": "Check mDNSResponderHelper is running",
     "check": "ps -ef |grep -v grep |grep mDNSResponderHelper |awk '{print $8}'",
     "value": "/usr/sbin/mDNSResponderHelper"
+  },
+  {
+    "title": "Check number of Firefox instances running is less than 10",
+    "check": "ps -ef |grep Firefox |grep -v grep |wc -l |sed 's/ //g'",
+    "funct": "<",
+    "value": "10"
   }
 ]
