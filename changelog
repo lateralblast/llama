@@ -17,3 +17,10 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 - Tue 29 Oct 2019 14:14:17 AEDT
   Added ability to do less than, greater than etc checks
+
+## [0.0.3] - 2019-11-02
+
+### Added
+
+- Sat  2 Nov 2019 03:23:53 AEDT
+  Added update code

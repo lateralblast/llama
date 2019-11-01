@@ -78,7 +78,7 @@ Getting help:
 
 ```
 ./llama.sh -h
-llama (Lightweight Linux Automated Monitoring Agent  0.0.1
+llama (Lightweight Linux Automated Monitoring Agent  0.0.3
 Richard Spindler <richard@lateralblast.com.au>
 
 Usage Information:
@@ -101,6 +101,10 @@ Usage Information:
        Run checks
     v)
        Run in verbose mode
+    U)
+       Check of updated script
+    u)
+       Update script
 ```
 
 Run checks and send alerts to Slack:

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Name:         llama (Lightweight Linux Automated Monitoring Agent
-# Version:      0.0.2
+# Version:      0.0.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -26,14 +26,50 @@ do_verbose="no"
 
 # Get the path the script starts from
 
-start_path=$(pwd)
+app_file="$0"
+app_path=$(dirname "$app_file")
+app_base=$(basename "$app_file"))
 
 # Get the script info from the script itself
 
-app_vers=$(cd "$start_path" || exit ; grep "^# Version" "$0" |awk '{print $3}')
-app_name=$(cd "$start_path" || exit ; grep "^# Name" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}')
-app_pkgr=$(cd "$start_path" || exit ; grep "^# Packager" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}')
-app_help=$(cd "$start_path" || exit ; grep -A1 " [A-Z,a-z])$" "$0" |sed "s/[#,\-\-]//g" |sed '/^\s*$/d')
+app_vers=$(cd "$app_path" || exit ; grep "^# Version" "$0" |awk '{print $3}')
+app_name=$(cd "$app_path" || exit ; grep "^# Name" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}' |sed 's/ $//g')
+app_same=$(cd "$app_path" || exit ; grep "^# Name" "$0" |awk '{print $3}')
+app_pkgr=$(cd "$app_path" || exit ; grep "^# Packager" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}')
+app_help=$(cd "$app_path" || exit ; grep -A1 " [A-Z,a-z])$" "$0" |sed "s/[#,\-\-]//g" |sed '/^\s*$/d')
+
+# Code to handle updates
+
+handle_vers() {
+  echo "$@" |awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }';
+}
+
+check_update() {
+  rem_vers_url="https://raw.githubusercontent.com/lateralblast/$app_same/master/version"
+  rem_app_url="https://raw.githubusercontent.com/lateralblast/$app_same/master/$app_base"
+  rem_vers_dir="/tmp/$app_same"
+  if [ ! -d "$rem_vers_dir" ] ; then
+    mkdir "$rem_vers_dir"
+  fi
+  rem_vers_file="$rem_vers_dir/version"
+  printf "Checking $app_same is up to date... "
+  if [ -f "$rem_vers_file" ] ; then
+    rm "$rem_vers_file"
+  fi
+  curl -s -o "$rem_vers_file" "$rem_vers_url"
+  if [ -f "$rem_vers_file" ] ; then
+    rem_vers=$(cat "$rem_vers_file")
+    if [ "$(handle_vers "$rem_vers")" -gt "$(handle_vers "$app_vers")" ]; then
+      printf "Newer version of $app_same exists\n"
+      if [ "$auto_update" = "yes" ] ; then
+        echo "Updating $app_same"
+        curl -s -o "$app_file" "$rem_app_url"
+      fi
+    else
+      printf "$app_same is up to date\n"
+    fi
+  fi
+}
 
 # Set up directory for storing Slack hook etc
 
@@ -189,7 +225,7 @@ do_checks() {
 
 # Handle command line arguments
 
-while getopts "Vvhsmlfcd" opt; do
+while getopts "VvhsmlfcdUu" opt; do
   case $opt in
     V)
       # Display Version
@@ -224,6 +260,18 @@ while getopts "Vvhsmlfcd" opt; do
     c)
       # Run checks 
       do_check="yes"
+      ;;
+    u)
+      # Check of updated script
+      do_update="no"
+      check_update
+      exit
+      ;;
+    U)
+      # Update script
+      do_update="yes"
+      check_update
+      exit
       ;;
     v)
       # Run in verbose mode
