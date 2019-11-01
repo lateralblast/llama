@@ -54,7 +54,7 @@ check_update() {
     mkdir "$rem_vers_dir"
   fi
   rem_vers_file="$rem_vers_dir/version"
-  printf "Checking $app_same is up to date... "
+  printf "Checking %s is up to date... " "$app_same"
   if [ -f "$rem_vers_file" ] ; then
     rm "$rem_vers_file"
   fi
@@ -62,13 +62,13 @@ check_update() {
   if [ -f "$rem_vers_file" ] ; then
     rem_vers=$(cat "$rem_vers_file")
     if [ "$(handle_vers "$rem_vers")" -gt "$(handle_vers "$app_vers")" ]; then
-      printf "Newer version of $app_same exists\n"
+      printf "Newer version of %s exists\n" "$app_same"
       if [ "$do_update" = "yes" ] ; then
         echo "Updating $app_same"
         curl -s -o "$app_file" "$rem_app_url"
       fi
     else
-      printf "$app_same is up to date\n"
+      printf "%s is up to date\n" "$app_same"
     fi
   fi
 }
