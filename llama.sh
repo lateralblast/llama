@@ -28,7 +28,7 @@ do_verbose="no"
 
 app_file="$0"
 app_path=$(dirname "$app_file")
-app_base=$(basename "$app_file"))
+app_base=$(basename "$app_file")
 
 # Get the script info from the script itself
 

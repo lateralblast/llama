@@ -99,12 +99,12 @@ Usage Information:
        Do Dry Run
     c)
        Run checks
+    u)
+       Check of updated script
+    U)
+       Update script
     v)
        Run in verbose mode
-    U)
-       Check of updated script
-    u)
-       Update script
 ```
 
 Run checks and send alerts to Slack:
