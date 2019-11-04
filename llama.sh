@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Name:         llama (Lightweight Linux Automated Monitoring Agent
-# Version:      0.0.3
+# Version:      0.0.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -212,6 +212,8 @@ do_checks() {
       if [ "$output" $funct "$value" ] || [ "$do_false" = "yes" ] ; then
         if [ "$do_dryrun" = "yes" ] ; then
           echo "Correct: $title returns $value"
+        else
+          handle_alert "$title" "$value" "$do_false"
         fi
       else
         if [ "$do_dryrun" = "yes" ] ; then
@@ -227,7 +229,7 @@ do_checks() {
 
 # Handle command line arguments
 
-while getopts "VvhsmlfcdUu" opt; do
+while getopts "VvhsmlfcdUui" opt; do
   case $opt in
     V)
       # Display Version
@@ -243,6 +245,10 @@ while getopts "VvhsmlfcdUu" opt; do
       print_help
       exit
       ;;
+    i)
+      # Install check
+      install_check
+      exit
     s)
       # Use Slack to post alerts
       do_slack="yes"

@@ -24,3 +24,9 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 - Sat  2 Nov 2019 03:23:53 AEDT
   Added update code
+
+## [0.0.4] - 2009-11-04
+
+- Mon  4 Nov 14:28:34 AEDT 2019
+  Fixed bug with false check and added -i option to check install
+  
