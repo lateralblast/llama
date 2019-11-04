@@ -28,7 +28,7 @@ do_update="no"
 # Check to see if we're using a user copy of jq in ~/bin
 
 if [ -f "$HOME/bin/jq" ] ; then
-  jq_bin = "$HOME/bin/jq"
+  jq_bin="$HOME/bin/jq"
 else
   if [ -z "$(command -v jq)" ]; then
     echo "Warning: Could not find jq" 
