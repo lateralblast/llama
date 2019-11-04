@@ -27,6 +27,15 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 ## [0.0.4] - 2009-11-04
 
+### Changed
+
 - Mon  4 Nov 14:28:34 AEDT 2019
   Fixed bug with false check and added -i option to check install
-  
+
+
+## [0.0.5] - 2009-11-04
+
+### Changed
+
+- Mon  4 Nov 2019 15:32:40 AEDT
+  Improved verbose mode and added check for user installed jq in ~/bin

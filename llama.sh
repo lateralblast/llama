@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Name:         llama (Lightweight Linux Automated Monitoring Agent
-# Version:      0.0.4
+# Version:      0.0.5
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -24,6 +24,18 @@ do_false="no"
 do_dryrun="no"
 do_verbose="no"
 do_update="no"
+
+# Check to see if we're using a user copy of jq in ~/bin
+
+if [ -f "$HOME/bin/jq" ] ; then
+  jq_bin = "$HOME/bin/jq"
+else
+  if [ -z "$(command -v jq)" ]; then
+    echo "Warning: Could not find jq" 
+  else
+    jq_bin=$(which jq)
+  fi 
+fi
 
 # Get the path the script starts from
 
@@ -138,16 +150,22 @@ handle_alert() {
   title=$1
   value=$2
   do_false=$3
+  do_verbose=$4
   if [ "$do_false" = "yes" ]; then
     message="Testing"
   else
     message="Warning"
   fi
   if [ "$do_slack" = "yes" ]; then
+    if [ "$verbose" = "yes" ] ; then
+      echo "Slack Alert: $message $title on $host_name does not return $value"
+    fi
     curl -X POST -H 'Content-type: application/json' --data "{'text':'$message $title on $host_name does not return $value'}" "$slack_hook"
-
   fi
   if [ "$do_email" = "yes" ]; then
+    if [ "$verbose" = "yes" ] ; then
+      echo "Email Alert: $message $title on $host_name does not return $value"
+    fi
     echo "Warning $title on $host_name does not return $value" | mail -s "$message $title on $host_name does not return $value" "$alert_email"
   fi
   return
@@ -162,13 +180,13 @@ do_checks() {
   do_false=$4
   do_verbose=$5
   correct="no"
-  length=$(jq length "$check_file")
+  length=$($jq_bin length "$check_file")
   length=$(expr "$length" - 1)
   for counter in $(seq 0 "$length") ; do  
-    title=$(jq -r ".[$counter].title" "$check_file")
-    check=$(jq -r ".[$counter].check" "$check_file")
-    value=$(jq -r ".[$counter].value" "$check_file")
-    funct=$(jq -r ".[$counter].funct" "$check_file")
+    title=$($jq_bin -r ".[$counter].title" "$check_file")
+    check=$($jq_bin -r ".[$counter].check" "$check_file")
+    value=$($jq_bin -r ".[$counter].value" "$check_file")
+    funct=$($jq_bin -r ".[$counter].funct" "$check_file")
     funct=$(echo "$funct" |sed 's/ //g' |tr '[:upper:]' '[:lower:]')
     if [ "$funct" = "null" ] ; then
       funct="="
@@ -210,16 +228,16 @@ do_checks() {
       fi
       output=$(eval $check)
       if [ "$output" $funct "$value" ] || [ "$do_false" = "yes" ] ; then
-        if [ "$do_dryrun" = "yes" ] ; then
+        if [ "$do_dryrun" = "yes" ] || [ "$do_verbose" = "yes" ] ; then
           echo "Correct: $title returns $value"
         else
-          handle_alert "$title" "$value" "$do_false"
+          handle_alert "$title" "$value" "$do_false" "$do_verbose"
         fi
       else
-        if [ "$do_dryrun" = "yes" ] ; then
+        if [ "$do_dryrun" = "yes" ] || [ "$do_verbose" = "yes" ] ; then
           echo "Warning: $title does not return $value"
         else
-          handle_alert "$title" "$value" "$do_false"
+          handle_alert "$title" "$value" "$do_false" "$do_verbose"
         fi
       fi
     fi
@@ -249,6 +267,7 @@ while getopts "VvhsmlfcdUui" opt; do
       # Install check
       install_check
       exit
+      ;;
     s)
       # Use Slack to post alerts
       do_slack="yes"
@@ -321,7 +340,7 @@ if [ "$do_list" = "yes" ] || [ "$do_check" = "yes" ]; then
     echo "Check file: $check_file does not exist" 
     exit
   fi
-  do_checks "$do_list" "$do_check" "$do_dryrun" "$do_false"
+  do_checks "$do_list" "$do_check" "$do_dryrun" "$do_false" "$do_verbose"
   exit
 fi
 
