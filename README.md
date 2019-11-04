@@ -71,6 +71,16 @@ This software is licensed as CC-BA (Creative Commons By Attrbution)
 http://creativecommons.org/licenses/by/4.0/legalcode
 
 
+Setup
+-----
+
+Probably the best way to run this is periodically via cron, e.g.:
+
+```
+$ crontab -l |grep llama
+55 * * * * /home/user/llama/llama.sh -c -s
+```
+
 Examples
 --------
 
@@ -131,4 +141,15 @@ Perform a dry run:
 ./llama.sh -c -d
 Correct: Check coreaudiod is running returns /usr/sbin/coreaudiod
 Correct: Check mDNSResponderHelper is running returns /usr/sbin/mDNSResponderHelper
+```
+
+Verbose check example:
+
+```
+./llama.sh -c -s -v
+Title: Check web server is running on host
+Check: curl -I -s -L -k https://webserver.com:8080 |grep 'HTTP' |awk '{print $2}'
+Value: 200
+Funct: =
+Correct: Check web server is running on host returns 200
 ```
