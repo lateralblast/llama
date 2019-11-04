@@ -88,7 +88,7 @@ Getting help:
 
 ```
 ./llama.sh -h
-llama (Lightweight Linux Automated Monitoring Agent  0.0.3
+llama (Lightweight Linux Automated Monitoring Agent  0.0.5
 Richard Spindler <richard@lateralblast.com.au>
 
 Usage Information:
@@ -99,6 +99,8 @@ Usage Information:
        Create false alerts
     h)
        Display Usage Information
+    i)
+       Install check
     s)
        Use Slack to post alerts
     m)
