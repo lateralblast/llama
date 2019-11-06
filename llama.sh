@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Name:         llama (Lightweight Linux Automated Monitoring Agent
-# Version:      0.0.5
+# Version:      0.0.6
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -45,11 +45,11 @@ app_base=$(basename "$app_file")
 
 # Get the script info from the script itself
 
-app_vers=$(cd "$app_path" || exit ; grep "^# Version" "$0" |awk '{print $3}')
-app_name=$(cd "$app_path" || exit ; grep "^# Name" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}' |sed 's/ $//g')
-app_same=$(cd "$app_path" || exit ; grep "^# Name" "$0" |awk '{print $3}')
-app_pkgr=$(cd "$app_path" || exit ; grep "^# Packager" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}')
-app_help=$(cd "$app_path" || exit ; grep -A1 " [A-Z,a-z])$" "$0" |sed "s/[#,\-\-]//g" |sed '/^\s*$/d')
+app_vers=$(grep "^# Version" "$0" |awk '{print $3}')
+app_name=$(grep "^# Name" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}' |sed 's/ $//g')
+app_same=$(grep "^# Name" "$0" |awk '{print $3}')
+app_pkgr=$(grep "^# Packager" "$0" |awk '{for (i=3;i<=NF;++i) printf $i" "}')
+app_help=$(grep -A1 " [A-Z,a-z])$" "$0" |sed "s/[#,\-\-]//g" |sed '/^\s*$/d')
 
 # Code to handle updates
 
