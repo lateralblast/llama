@@ -227,10 +227,11 @@ do_checks() {
         echo "Funct: $funct"
       fi
       output=$(eval $check)
-      if [ "$output" $funct "$value" ] || [ "$do_false" = "yes" ] ; then
+      if [ "$output" $funct "$value" ] ; then
         if [ "$do_dryrun" = "yes" ] || [ "$do_verbose" = "yes" ] ; then
           echo "Correct: $title returns $value"
-        else
+        fi
+        if [ "$do_false" = "yes" ] ; then
           handle_alert "$title" "$value" "$do_false" "$do_verbose"
         fi
       else
