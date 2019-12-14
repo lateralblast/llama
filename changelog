@@ -40,10 +40,19 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Mon  4 Nov 2019 15:32:40 AEDT
   Improved verbose mode and added check for user installed jq in ~/bin
 
-## [0.0.6] - 2009-11-07
+## [0.0.6] - 2019-11-07
 
 ### Changed
 
 - Thu Nov  7 01:57:33 AEDT 2019
   Bug fixes
+
+## [0.0.7] - 2019-12-14
+
+### Changed
+
+- Sat 14 Dec 2019 15:03:11 AEDT
+  Added code to install jq on MacOS and added initial support for email and slack tags in JSON
+- Sat 14 Dec 2019 17:34:25 AEDT
+  Fixed help function
   

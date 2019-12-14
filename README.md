@@ -10,9 +10,9 @@ Introduction
 
 This is a simple monitoring tool that will sent a message to Slack via a Slack Webhook or to an email address if a check doesn't return a value
 
-The URL for the Slack Webhook is kept in ~/.llama/slack_hook_file
+The URL for the Slack Webhook is kept in ~/.llama/slack_hook_file or can be included in the JSON file to provide per alert slack hooks.
 
-The email list for the email alerts is kept in ~/.llama/email_list_file
+The email list for the email alerts is kept in ~/.llama/email_list_file or can be provided in the JSON file to provide per alert email addresses.
 
 The checks are in JSON file (~/.llama/checks.json).
 
@@ -44,6 +44,21 @@ An example of a less than check:
     "check": "ps -ef |grep Firefox |grep -v grep |wc -l |sed 's/ //g'",
     "funct": "<",
     "value": "10"
+  }
+]
+```
+
+An example with a slack hook and eail alert address:
+
+```
+[
+  {
+    "title": "Check number of Firefox instances running is less than 10",
+    "check": "ps -ef |grep Firefox |grep -v grep |wc -l |sed 's/ //g'",
+    "funct": "<",
+    "value": "10",
+    "email": "alerts@blah.com",
+    "slack": "https://hooks.slack.com/services/BLAH"
   }
 ]
 ```

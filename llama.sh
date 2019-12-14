@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Name:         llama (Lightweight Linux Automated Monitoring Agent
-# Version:      0.0.6
+# Version:      0.0.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -30,10 +30,23 @@ do_update="no"
 if [ -f "$HOME/bin/jq" ] ; then
   jq_bin="$HOME/bin/jq"
 else
-  if [ -z "$(command -v jq)" ]; then
-    echo "Warning: Could not find jq" 
-  else
-    jq_bin=$(which jq)
+  jq_bin="$(command -v jq)"
+  if [ "$jq_bin" = "" ] ; then
+    os_name="$(uname -s)"
+    if [ "$os_name" = "Darwin" ] ; then
+      brew_bin="(command -v brew)"
+      if [ ! "$brew_bin" = "" ] ; then
+        brew install jq
+      fi
+      jq_bin="(command -v jq)"
+      if [ "$jq_bin" = "" ] ; then
+        echo "Warning: Could not find jq" 
+        exit
+      fi
+    else
+      echo "Warning: Could not find jq" 
+      exit
+    fi
   fi 
 fi
 
@@ -149,24 +162,24 @@ install_check() {
 handle_alert() {
   title=$1
   value=$2
-  do_false=$3
-  do_verbose=$4
+  email=$3
+  slack=$4
   if [ "$do_false" = "yes" ]; then
     message="Testing"
   else
     message="Warning"
   fi
-  if [ "$do_slack" = "yes" ]; then
+  if [ "$do_slack" = "yes" ] && [ ! "$slack" = "none" ] ; then
     if [ "$verbose" = "yes" ] ; then
       echo "Slack Alert: $message $title on $host_name does not return $value"
     fi
-    curl -X POST -H 'Content-type: application/json' --data "{'text':'$message $title on $host_name does not return $value'}" "$slack_hook"
+    curl -X POST -H 'Content-type: application/json' --data "{'text':'$message $title on $host_name does not return $value'}" "$slack"
   fi
-  if [ "$do_email" = "yes" ]; then
+  if [ "$do_email" = "yes" ] && [ ! "$email" = "none" ] ; then
     if [ "$verbose" = "yes" ] ; then
       echo "Email Alert: $message $title on $host_name does not return $value"
     fi
-    echo "Warning $title on $host_name does not return $value" | mail -s "$message $title on $host_name does not return $value" "$alert_email"
+    echo "Warning $title on $host_name does not return $value" | mail -s "$message $title on $host_name does not return $value" "$email"
   fi
   return
 }
@@ -174,11 +187,8 @@ handle_alert() {
 # Do checks
 
 do_checks() {
-  do_list=$1
-  do_check=$2
-  do_dryrun=$3
-  do_false=$4
-  do_verbose=$5
+  f_email=$1
+  f_slack=$2
   correct="no"
   length=$($jq_bin length "$check_file")
   length=$(expr "$length" - 1)
@@ -186,7 +196,19 @@ do_checks() {
     title=$($jq_bin -r ".[$counter].title" "$check_file")
     check=$($jq_bin -r ".[$counter].check" "$check_file")
     value=$($jq_bin -r ".[$counter].value" "$check_file")
+    j_email=$($jq_bin -r ".[$counter].email" "$check_file")
+    j_slack=$($jq_bin -r ".[$counter].slack" "$check_file")
     funct=$($jq_bin -r ".[$counter].funct" "$check_file")
+    if [ ! "$j_email" = "" ] ; then
+      email="$j_email"
+    else
+      email="$f_email"
+    fi
+    if [ ! "$j_slack" = "" ] ; then
+      slack="$j_slack"
+    else
+      slack="$f_slack"
+    fi
     funct=$(echo "$funct" |sed 's/ //g' |tr '[:upper:]' '[:lower:]')
     if [ "$funct" = "null" ] ; then
       funct="="
@@ -219,12 +241,16 @@ do_checks() {
       echo "Check: $check"
       echo "Value: $value"
       echo "Funct: $funct"
+      echo "Email: $email"
+      echo "Slack: $slack"
     else
       if [ "$do_verbose" = "yes" ] ; then
         echo "Title: $title"
         echo "Check: $check"
         echo "Value: $value"
         echo "Funct: $funct"
+        echo "Email: $email"
+        echo "Slack: $slack"
       fi
       output=$(eval $check)
       if [ "$output" $funct "$value" ] ; then
@@ -232,13 +258,13 @@ do_checks() {
           echo "Correct: $title returns $value"
         fi
         if [ "$do_false" = "yes" ] ; then
-          handle_alert "$title" "$value" "$do_false" "$do_verbose"
+          handle_alert "$title" "$value" "$email" "$slack" 
         fi
       else
         if [ "$do_dryrun" = "yes" ] || [ "$do_verbose" = "yes" ] ; then
           echo "Warning: $title does not return $value"
         else
-          handle_alert "$title" "$value" "$do_false" "$do_verbose"
+          handle_alert "$title" "$value" "$email" "$slack" 
         fi
       fi
     fi
@@ -316,22 +342,24 @@ done
 
 if [ "$do_slack" = "yes" ]; then
   if [ -f "$slack_file" ] ; then
-    slack_hook=$(cat "$slack_file")
+    f_slack=$(cat "$slack_file")
   else
-    echo "Warning Slack hook file $slack_file does not exist"
-    exit
+    f_slack="none"
   fi
+else
+  f_slack="none"
 fi
 
 #Handle alert email address
 
 if [ "$do_email" = "yes" ]; then
   if [ -f "$email_file" ] ; then
-    alert_email=$(cat "$email_file")
+    f_email=$(cat "$email_file")
   else
-    echo "Warning email alert list file $email_file does not exist"
-    exit
+    f_email="none"
   fi
+else
+  f_email="none"
 fi
 
 # Handle checks
@@ -341,13 +369,8 @@ if [ "$do_list" = "yes" ] || [ "$do_check" = "yes" ]; then
     echo "Check file: $check_file does not exist" 
     exit
   fi
-  do_checks "$do_list" "$do_check" "$do_dryrun" "$do_false" "$do_verbose"
+  do_checks "$f_email" "$f_slack"
   exit
-fi
-
-# If given no command line arguments print usage information
-
-if expr "$opt" : "\-" != 1; then
+else
   print_help
-  exit
 fi
